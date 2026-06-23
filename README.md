@@ -62,6 +62,7 @@ aims-notifs uninstall
 
 * Linux system with systemd user services enabled
 * Python 3.10 or newer
+* Python venv support (install using `sudo apt install python3-venv`)
 * Internet connection
 * AIMS account credentials (**will only be stored locally**)
 * Email account with an app password configured (**will only be stored locally**)
@@ -278,6 +279,7 @@ If you encounter a bug, have a feature request, or need help setting up the appl
 When reporting a bug, please include:
 
 * Your Linux distribution and version
+* Your VPN status
 * Output of `aims-notifs status`
 * Relevant logs from `aims-notifs logs`
 * Steps to reproduce the issue
@@ -290,6 +292,7 @@ When reporting a bug, please include:
 ~/.aims-notifs/
 ├── config.json
 ├── main.py
+├── not_graded_courses.txt
 ├── setup.py
 ├── requirements.txt
 └── venv/
@@ -299,6 +302,9 @@ When reporting a bug, please include:
 └── aims-notifs.timer
 
 ~/.local/bin/
+└── aims-notifs
+
+~/.local/share/bash-completion/completions
 └── aims-notifs
 ```
 
