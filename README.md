@@ -18,13 +18,19 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 
 [Google App Passwords Guide](https://support.google.com/mail/answer/185833)
 
-3. Run the setup command:
+3. Switch on [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and keep it on (if applicable):
+
+```bash
+sudo wg-quick up wg0
+```
+
+4. Run the setup command:
 
 ```bash
 aims-notifs setup
 ```
 
-4. Enter your:
+5. Enter your:
 
     * AIMS username (roll number, all lowercase)
     * AIMS password
@@ -62,7 +68,7 @@ aims-notifs uninstall
 
 ---
 
-## Installation
+## Detailed Installation
 
 Download or clone the project, then run:
 
@@ -76,7 +82,13 @@ This installs the `aims-notifs` command and copies the application files to:
 ~/.aims-notifs
 ```
 
-After installation, run:
+Switch on [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and keep it on (if applicable):
+
+```bash
+sudo wg-quick up wg0
+```
+
+Next, run:
 
 ```bash
 aims-notifs setup

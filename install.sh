@@ -48,4 +48,5 @@ fi
 echo "Next steps:"
 echo "  Create an App Password (on the email ID to which you want to receive notifications)"
 echo "    Refer to https://support.google.com/mail/answer/185833"
+echo "  Switch on IITH VPN, and keep it on (if applicable)"
 echo "  Run aims-notifs setup"
