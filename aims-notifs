@@ -1,9 +1,36 @@
 APP_DIR="$HOME/.aims-notifs"
+BIN_DIR="$HOME/.local/bin"
+COMPLETIONS_DIR="$HOME/.local/share/bash-completion/completions"
 SYSTEMD_DIR="$HOME/.config/systemd/user"
 
 case "$1" in
 
 setup)
+    rm -rf /tmp/test-venv
+    python3 -m venv /tmp/test-venv >/dev/null 2>&1
+
+    if [ ! -x /tmp/test-venv/bin/pip ]; then
+        echo "Python venv support (ensurepip) is missing."
+
+        if command -v apt >/dev/null 2>&1; then
+            echo "Installing python3-venv..."
+            sudo apt install -y python3-venv
+
+            rm -rf /tmp/test-venv
+            python3 -m venv /tmp/test-venv >/dev/null 2>&1
+
+            if [ ! -x /tmp/test-venv/bin/pip ]; then
+                echo "Failed to install working venv support."
+                echo "Please install your system's Python venv package (using 'sudo apt install python3-venv'), and rerun."
+                exit 1
+            fi
+        else
+            echo "Please install your system's Python venv package (using 'sudo apt install python3-venv'), and rerun."
+            exit 1
+        fi
+    fi
+
+    rm -rf /tmp/test-venv
 
     python3 -m venv "$APP_DIR/venv"
 
@@ -18,7 +45,6 @@ setup)
 
     "$APP_DIR/venv/bin/python" \
         "$APP_DIR/setup.py"
-EOF
 
     mkdir -p "$SYSTEMD_DIR"
 
@@ -48,7 +74,8 @@ EOF
 
     echo
     echo "Setup complete."
-    echo "Run: aims-notifs start"
+    echo "Starting IITH AIMS Grade Notification System..."
+    aims-notifs start
     ;;
 
 start)
@@ -68,6 +95,8 @@ stop)
 
 status)
 
+    echo "Press 'q' to exit the status view."
+    echo
     systemctl --user status aims-notifs.timer
     ;;
 
@@ -78,6 +107,8 @@ run-now)
 
 logs)
 
+    echo "Press 'Ctrl+C' to exit the logs view."
+    echo
     echo "Logs are stored in the systemd journal."
     echo
     echo "View all logs:"
@@ -97,6 +128,8 @@ uninstall)
 
     systemctl --user daemon-reload
 
+    rm -f "$COMPLETIONS_DIR/aims-notifs"
+    rm -f "$BIN_DIR/aims-notifs"
     rm -rf "$APP_DIR"
 
     echo "IITH AIMS Grade Notification System uninstalled."

@@ -6,6 +6,41 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 
 ---
 
+## Quick Setup Guide
+
+1. Install the application:
+
+```bash
+./install.sh
+```
+
+2. Create an App Password (on the email ID to which you want to receive notifications) by following Google's instructions:
+
+[Google App Passwords Guide](https://support.google.com/mail/answer/185833)
+
+3. Run the setup command:
+
+```bash
+aims-notifs setup
+```
+
+4. Enter your:
+
+    * AIMS username (roll number, all lowercase)
+    * AIMS password
+    * Email address (from/to which the notification will be sent/received)
+    * App Password
+
+when prompted (**these will only be stored locally**).
+
+* Uninstallation: To completely remove the application, run:
+
+```bash
+aims-notifs uninstall
+```
+
+---
+
 ## Features
 
 * Automatic AIMS grade monitoring
@@ -14,7 +49,6 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 * Manual on-demand checks
 * Persistent logging via systemd journal
 * Simple installation and setup
-* User-level installation (no root access required)
 
 ---
 
@@ -23,8 +57,8 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 * Linux system with systemd user services enabled
 * Python 3.10 or newer
 * Internet connection
-* AIMS account credentials (will only be stored locally)
-* Email account with an app password configured
+* AIMS account credentials (**will only be stored locally**)
+* Email account with an app password configured (**will only be stored locally**)
 
 ---
 
@@ -122,7 +156,7 @@ If you cannot find the **App passwords** option:
 
 During setup, you will be prompted for:
 
-* AIMS username (roll number, lowercase)
+* AIMS username (roll number, all lowercase)
 * AIMS password
 * Email address
 * Email app password
@@ -239,9 +273,9 @@ This removes:
 
 ```text
 ~/.aims-notifs/
+├── config.json
 ├── main.py
 ├── setup.py
-├── config.json
 ├── requirements.txt
 └── venv/
 

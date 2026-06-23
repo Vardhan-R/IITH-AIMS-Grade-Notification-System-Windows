@@ -4,12 +4,12 @@ from json import dump
 from pathlib import Path
 
 
-CONFIG_PATH = Path.home() / ".course-grader" / "config.json"
+CONFIG_PATH = Path.home() / ".aims-notifs" / "config.json"
 
 username = input("Enter your AIMS username (roll number, all lowercase): ").strip().lower()
 aims_password = getpass("Enter your AIMS password: ").strip("\n")
 email = input("Enter your email address (from/to which the notification will be sent/received): ").strip()
-app_password = getpass("Enter your app password (NOT your email account password): ").strip("\n")
+app_password = getpass("Enter your App Password (NOT your email account password): ").strip("\n")
 
 key = Fernet.generate_key()
 cipher = Fernet(key)
