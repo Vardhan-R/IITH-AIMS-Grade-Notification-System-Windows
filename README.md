@@ -8,7 +8,7 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 
 ## Quick Setup Guide
 
-1. Install the application:
+1. From the project directory, install the application:
 
 ```bash
 ./install.sh
@@ -70,7 +70,7 @@ aims-notifs uninstall
 
 ## Detailed Installation
 
-Download or clone the project, then run:
+Download or clone the project, then run (from the project directory):
 
 ```bash
 ./install.sh
@@ -164,7 +164,9 @@ If you cannot find the **App passwords** option:
 
 ---
 
-## Initial Setup
+## Usage
+
+### Initial Setup
 
 During setup, you will be prompted for:
 
@@ -187,9 +189,7 @@ Run:
 aims-notifs setup
 ```
 
----
-
-## Starting Automatic Monitoring
+### Starting Automatic Monitoring
 
 Enable automatic checks:
 
@@ -199,9 +199,7 @@ aims-notifs start
 
 The application will run every 15 minutes.
 
----
-
-## Stopping Automatic Monitoring
+### Stopping Automatic Monitoring
 
 Stop scheduled checks:
 
@@ -209,9 +207,7 @@ Stop scheduled checks:
 aims-notifs stop
 ```
 
----
-
-## Check Status
+### Check Status
 
 View the timer status:
 
@@ -219,9 +215,7 @@ View the timer status:
 aims-notifs status
 ```
 
----
-
-## Run a Check Immediately
+### Run a Check Immediately
 
 Run the grade checker once without waiting for the next scheduled execution:
 
@@ -229,9 +223,7 @@ Run the grade checker once without waiting for the next scheduled execution:
 aims-notifs run-now
 ```
 
----
-
-## View Logs
+### View Logs
 
 View live logs:
 
@@ -261,9 +253,7 @@ journalctl --user -u aims-notifs.service -f
 
 Follow logs live.
 
----
-
-## Uninstallation
+### Uninstallation
 
 To completely remove the application:
 
@@ -278,6 +268,19 @@ This removes:
 * Configuration files
 * Virtual environment
 * Application files
+
+---
+
+## Reporting Issues
+
+If you encounter a bug, have a feature request, or need help setting up the application, please open an [issue on GitHub](https://github.com/Vardhan-R/IITH-AIMS-Grade-Notification-System/issues):
+
+When reporting a bug, please include:
+
+* Your Linux distribution and version
+* Output of `aims-notifs status`
+* Relevant logs from `aims-notifs logs`
+* Steps to reproduce the issue
 
 ---
 
