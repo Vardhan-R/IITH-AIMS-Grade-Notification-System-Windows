@@ -1,0 +1,118 @@
+APP_DIR="$HOME/.aims-notifs"
+SYSTEMD_DIR="$HOME/.config/systemd/user"
+
+case "$1" in
+
+setup)
+
+    python3 -m venv "$APP_DIR/venv"
+
+    "$APP_DIR/venv/bin/pip" install \
+        --upgrade pip
+
+    "$APP_DIR/venv/bin/pip" install \
+        -r "$APP_DIR/requirements.txt"
+
+    "$APP_DIR/venv/bin/python" \
+        -m playwright install chromium
+
+    "$APP_DIR/venv/bin/python" \
+        "$APP_DIR/setup.py"
+EOF
+
+    mkdir -p "$SYSTEMD_DIR"
+
+    cat > "$SYSTEMD_DIR/aims-notifs.service" <<EOF
+[Unit]
+Description=IITH AIMS Grade Notification System
+
+[Service]
+Type=oneshot
+WorkingDirectory=$APP_DIR
+ExecStart=$APP_DIR/venv/bin/python $APP_DIR/main.py
+EOF
+
+    cat > "$SYSTEMD_DIR/aims-notifs.timer" <<EOF
+[Unit]
+Description=IITH AIMS Grade Notification System Timer
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
+EOF
+
+    systemctl --user daemon-reload
+
+    echo
+    echo "Setup complete."
+    echo "Run: aims-notifs start"
+    ;;
+
+start)
+
+    systemctl --user enable aims-notifs.timer
+    systemctl --user start aims-notifs.timer
+
+    echo "IITH AIMS Grade Notification System started."
+    ;;
+
+stop)
+
+    systemctl --user stop aims-notifs.timer
+
+    echo "IITH AIMS Grade Notification System stopped."
+    ;;
+
+status)
+
+    systemctl --user status aims-notifs.timer
+    ;;
+
+run-now)
+
+    systemctl --user start aims-notifs.service
+    ;;
+
+logs)
+
+    echo "Logs are stored in the systemd journal."
+    echo
+    echo "View all logs:"
+    echo "  journalctl --user -u aims-notifs.service"
+    echo
+
+    journalctl --user -u aims-notifs.service -f
+    ;;
+
+uninstall)
+
+    systemctl --user stop aims-notifs.timer 2>/dev/null || true
+    systemctl --user disable aims-notifs.timer 2>/dev/null || true
+
+    rm -f "$SYSTEMD_DIR/aims-notifs.service"
+    rm -f "$SYSTEMD_DIR/aims-notifs.timer"
+
+    systemctl --user daemon-reload
+
+    rm -rf "$APP_DIR"
+
+    echo "IITH AIMS Grade Notification System uninstalled."
+    ;;
+
+*)
+
+    echo "Usage:"
+    echo "  aims-notifs setup"
+    echo "  aims-notifs start"
+    echo "  aims-notifs stop"
+    echo "  aims-notifs status"
+    echo "  aims-notifs run-now"
+    echo "  aims-notifs logs"
+    echo "  aims-notifs uninstall"
+
+    exit 1
+    ;;
+esac
