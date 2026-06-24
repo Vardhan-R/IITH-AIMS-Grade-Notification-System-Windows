@@ -8,25 +8,23 @@ The application runs locally on your machine and checks AIMS every 15 minutes. W
 
 ## Quick Setup Guide
 
-1. From the project directory, install the application:
+1. From the project directory, install the application (as administrator, if necessary):
 
-```bash
-./install.sh
+```powershell
+.\install.ps1
 ```
+
+If `install.ps1` updates your PATH, restart your PowerShell session before continuing.
 
 2. Create an App Password (on the email ID to which you want to receive notifications) by following Google's instructions:
 
 [Google App Passwords Guide](https://support.google.com/mail/answer/185833)
 
-3. Switch on [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and keep it on (if applicable):
-
-```bash
-sudo wg-quick up wg0
-```
+3. Connect to [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and stay connected (if applicable), using your Windows VPN client.
 
 4. Run the setup command:
 
-```bash
+```powershell
 aims-notifs setup
 ```
 
@@ -41,7 +39,7 @@ when prompted (**these will only be stored locally**).
 
 * Uninstallation: To completely remove the application, run:
 
-```bash
+```powershell
 aims-notifs uninstall
 ```
 
@@ -51,18 +49,20 @@ aims-notifs uninstall
 
 * Automatic AIMS grade monitoring
 * Email notifications when new grades are released
-* Runs automatically every 15 minutes
+* Runs automatically every 15 minutes via Windows Task Scheduler
 * Manual on-demand checks
-* Persistent logging via systemd journal
+* Background execution (no visible console or browser window during scheduled runs)
+* Persistent logging to a local log file
 * Simple installation and setup
 
 ---
 
 ## Requirements
 
-* Linux system with systemd user services enabled
-* Python 3.10 or newer
-* Python venv support (install using `sudo apt install python3-venv`)
+* Windows 10 or newer with Task Scheduler
+* PowerShell 5.1 or newer
+* Python 3.10 or newer ([python.org](https://www.python.org/downloads/)), with **pip** and the **py launcher** enabled during installation
+* Python venv support (`ensurepip`, included with a standard Python install)
 * Internet connection
 * AIMS account credentials (**will only be stored locally**)
 * Email account with an app password configured (**will only be stored locally**)
@@ -71,27 +71,37 @@ aims-notifs uninstall
 
 ## Detailed Installation
 
-Download or clone the project, then run (from the project directory):
+Download or clone the project, then run (from the project directory, as administrator, if necessary):
 
-```bash
-./install.sh
+```powershell
+.\install.ps1
 ```
 
 This installs the `aims-notifs` command and copies the application files to:
 
 ```text
-~/.aims-notifs
+%USERPROFILE%\.aims-notifs
 ```
 
-Switch on [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and keep it on (if applicable):
+Connect to [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and stay connected (if applicable), using your Windows VPN client.
 
-```bash
-sudo wg-quick up wg0
+The CLI is installed to:
+
+```text
+%LOCALAPPDATA%\Programs\IITH AIMS Grade Notification System\bin\
 ```
+
+`install.ps1` also:
+
+* Creates an `aims-notifs.cmd` wrapper so you can run `aims-notifs` from any terminal
+* Adds tab completion for `aims-notifs` commands to your PowerShell profile
+* Adds the `bin` directory to your user PATH if it is not already present
+
+Connect to [IITH VPN](https://docs.google.com/document/u/0/d/e/2PACX-1vQxWGsv6dhwmvx4Efq17CPyCBTvMiKd9oTJecNDy51KXIPDfdjUQq822EpBExduoPtBTQbkvtNMudqh/pub), and stay connected (if applicable).
 
 Next, run:
 
-```bash
+```powershell
 aims-notifs setup
 ```
 
@@ -141,14 +151,14 @@ abcd efgh ijkl mnop
 
 When running:
 
-```bash
+```powershell
 aims-notifs setup
 ```
 
 and prompted for:
 
 ```text
-Enter your app password (NOT your email account password):
+Enter your App Password (NOT your email account password):
 ```
 
 paste the generated App Password.
@@ -182,11 +192,11 @@ The setup command:
 2. Installs all required Python packages
 3. Installs Playwright Chromium
 4. Stores your encrypted configuration
-5. Creates the systemd service and timer
+5. Creates a Windows Task Scheduler task named `aims-notifs`
 
 Run:
 
-```bash
+```powershell
 aims-notifs setup
 ```
 
@@ -194,7 +204,7 @@ aims-notifs setup
 
 Enable automatic checks:
 
-```bash
+```powershell
 aims-notifs start
 ```
 
@@ -204,15 +214,15 @@ The application will run every 15 minutes.
 
 Stop scheduled checks:
 
-```bash
+```powershell
 aims-notifs stop
 ```
 
 ### Check Status
 
-View the timer status:
+View the scheduled task status:
 
-```bash
+```powershell
 aims-notifs status
 ```
 
@@ -220,7 +230,7 @@ aims-notifs status
 
 Run the grade checker once without waiting for the next scheduled execution:
 
-```bash
+```powershell
 aims-notifs run-now
 ```
 
@@ -228,47 +238,33 @@ aims-notifs run-now
 
 View live logs:
 
-```bash
+```powershell
 aims-notifs logs
 ```
 
-Logs are stored in the systemd journal.
+Logs are stored in:
 
-Additional commands:
-
-```bash
-journalctl --user -u aims-notifs.service
+```text
+%USERPROFILE%\.aims-notifs\aims-notifs.log
 ```
 
-View all logs.
-
-```bash
-journalctl --user -u aims-notifs.service -n 100
-```
-
-View the most recent 100 log entries.
-
-```bash
-journalctl --user -u aims-notifs.service -f
-```
-
-Follow logs live.
+Press `Ctrl+C` to exit the live log view.
 
 ### Uninstallation
 
 To completely remove the application:
 
-```bash
+```powershell
 aims-notifs uninstall
 ```
 
 This removes:
 
-* Systemd timer
-* Systemd service
+* The Task Scheduler task
 * Configuration files
 * Virtual environment
 * Application files
+* The installed CLI under `%LOCALAPPDATA%\Programs\IITH AIMS Grade Notification System\`
 
 ---
 
@@ -278,7 +274,7 @@ If you encounter a bug, have a feature request, or need help setting up the appl
 
 When reporting a bug, please include:
 
-* Your Linux distribution and version
+* Your Windows version
 * Your VPN status
 * Output of `aims-notifs status`
 * Relevant logs from `aims-notifs logs`
@@ -289,22 +285,20 @@ When reporting a bug, please include:
 ## Directory Layout
 
 ```text
-~/.aims-notifs/
+%USERPROFILE%\.aims-notifs\
+├── aims-notifs.log
 ├── config.json
 ├── main.py
 ├── not_graded_courses.txt
-├── setup.py
 ├── requirements.txt
-└── venv/
+├── setup.py
+└── venv\
 
-~/.config/systemd/user/
-├── aims-notifs.service
-└── aims-notifs.timer
+%LOCALAPPDATA%\Programs\IITH AIMS Grade Notification System\bin\
+├── aims-notifs.cmd
+└── aims-notifs.ps1
 
-~/.local/bin/
-└── aims-notifs
-
-~/.local/share/bash-completion/completions
+Task Scheduler\
 └── aims-notifs
 ```
 

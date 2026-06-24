@@ -1,14 +1,16 @@
 from cryptography.fernet import Fernet
-from datetime import datetime
 from json import load
 from playwright.sync_api import Page, BrowserContext, Request, sync_playwright
+import logging
 import os
 import smtplib
 import ssl
 import unicodedata
 
 
-CONFIG_FILE_PATH = "config.json"
+APP_DIR = os.path.join(os.path.expanduser("~"), ".aims-notifs")
+LOG_FILE = os.path.join(APP_DIR, "aims-notifs.log")
+CONFIG_FILE_PATH = os.path.join(APP_DIR, "config.json")
 
 BASE_URL = "https://aims.iith.ac.in/aims/"
 DASHBOARD_URL = "https://aims.iith.ac.in/aims/login/dashboard"
@@ -43,6 +45,27 @@ SMTP_SERVER = "smtp.gmail.com"
 PORT = 465
 
 
+class NewlineFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        message = record.getMessage()
+
+        if message.startswith("\n"):
+            record.msg = message.lstrip("\n")
+            result = super().format(record)
+            record.msg = message
+            return "\n" + result
+
+        return super().format(record)
+
+
+handler = logging.FileHandler(LOG_FILE)
+handler.setFormatter(NewlineFormatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+
+
 def load_credentials() -> tuple[str, str, str, str]:
     if not os.path.exists(CONFIG_FILE_PATH):
         raise FileNotFoundError(f"{CONFIG_FILE_PATH} not found. Please run setup.py first.")
@@ -73,7 +96,7 @@ def login(page: Page) -> bool:
     # Extract captcha
     src = page.locator("#appCaptchaLoginImg").get_attribute("src")
     if src is None:
-        print("Captcha image source not found.")
+        logger.error("Captcha image source not found.")
         return False
     captcha = src.split("/")[-1]
 
@@ -115,11 +138,11 @@ def get_json(url: str, context: BrowserContext) -> list[dict] | None:
     try:
         res = context.request.get(url, timeout=30_000)
         if not res.ok:
-            print(f"HTTP error {res.status}")
+            logger.error(f"HTTP error {res.status}")
             return None
         return res.json()
     except Exception as e:
-        print(f"Failed to fetch JSON:\n{e}")
+        logger.error(f"Failed to fetch JSON:\n{e}")
         return None
 
 
@@ -191,11 +214,11 @@ def notify_by_email(messages: set[str]) -> bool:
                 message = unicodedata.normalize("NFKD", f"Subject: {msg}") \
                     .encode("ascii", "ignore") \
                     .decode("ascii")
-                print(message)
+                logger.info(message)
                 server.sendmail(email, email, message)
         return True
     except Exception as e:
-        print(f"An error occurred while sending the emails: {e}")
+        logger.error(f"An error occurred while sending the emails: {e}")
         return False
 
 
@@ -208,31 +231,30 @@ def update_not_graded_courses_file(not_graded_courses: list[dict]) -> None:
 
 def main() -> None:
     with sync_playwright() as p:
-        print()
-        print(datetime.now())
+        logger.info("\nStarting aims-notifs...")
         browser = p.chromium.launch()
         context = browser.new_context()
         page = context.new_page()
 
-        print("Logging in...")
+        logger.info("Logging in...")
         if not login(page):
-            print("Login failed.")
+            logger.error("Login failed.")
             browser.close()
             return
 
-        print("Obtaining JSESSIONID...")
+        logger.info("Obtaining JSESSIONID...")
         jsessionid = obtain_jsessionid(page)
         if jsessionid is None:
-            print("Could not obtain JSESSIONID.")
+            logger.error("Could not obtain JSESSIONID.")
             try:
                 page.evaluate("logOut()")
                 page.wait_for_load_state("networkidle")
             except Exception as e:
-                print(f"Error while logging out: {e}")
+                logger.error(f"Error while logging out: {e}")
             browser.close()
             return
         else:
-            print("Obtained JSESSIONID.")
+            logger.info("Obtained JSESSIONID.")
 
         # Inject cookie obtained after login
         context.add_cookies([{
@@ -245,21 +267,21 @@ def main() -> None:
             "sameSite": "Lax"
         }])
 
-        print("Checking for newly graded courses...")
+        logger.info("Checking for newly graded courses...")
         not_graded_courses = get_not_graded_courses(context)
         if not_graded_courses is not None:
             newly_graded = get_newly_graded_course_ids(not_graded_courses)
             if newly_graded:
                 msgs = get_grade_messages(newly_graded, context)
                 if notify_by_email(msgs):
-                    print("Notification email(s) sent successfully.")
+                    logger.info("Notification email(s) sent successfully.")
                     update_not_graded_courses_file(not_graded_courses)
                 else:
-                    print("Failed to send notification email(s).")
+                    logger.error("Failed to send notification email(s).")
             else:
-                print("No newly graded courses found.")
+                logger.info("No newly graded courses found.")
 
-        print("Logging out...")
+        logger.info("Logging out...")
         page.evaluate("logOut()")
         page.wait_for_load_state("networkidle")
 
